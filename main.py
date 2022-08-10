@@ -1,22 +1,16 @@
 # Vocabulary builder
 
-# Modules
 import random
 import json
-import json
-from collections import namedtuple
-from json import JSONEncoder
+import os
 
-# Open/create words file, where the vocabulary will be stored
 open("WORDS.txt", "a+")
 with open("WORDS.txt", "r", encoding="utf-8") as f:
     words = f.read().splitlines()
     f.close()
 
-# Open the json with some stats, like score and number of words learned
 f = open("stats.json")
 json_stats = json.load(f)
-# Initialize the 2 languages
 if json_stats["language1"] == "" or json_stats["language2"] == "":
     lang1 = input("To start, choose your primary language: ")
     lang2 = input("Now choose your secondary language you wanna learn: ")
@@ -28,6 +22,24 @@ if json_stats["language1"] == "" or json_stats["language2"] == "":
 
 lang1 = json_stats["language1"]
 lang2 = json_stats["language2"]
+
+def reset():
+    os.remove("WORDS.txt")  
+    open("WORDS.txt", "a+")
+    with open('stats.json', 'w') as f:
+        for stat in json_stats:
+            print(stat)
+            if stat == ("language1" or "language2"):
+                json_stats[stat] = ""
+            else:
+                json_stats[stat] = 0
+        json.dump(json_stats, f)
+
+def change_language():
+        new_lang1 = input("Choose the new primary language: ")
+        new_lang2 = input("Choose the new secundary language: ")
+        json_stats["language1"] = new_lang1
+        json_stats["language2"] = new_lang2
 
 def show_stats():
     print("\nLanguages: ", json_stats["language1"], "/", json_stats["language2"])
@@ -45,11 +57,25 @@ def separate_words(words):  # words = "word1 word2"
 while True:
     with open("WORDS.txt", "rt", encoding="utf-8") as f:
         words = f.read().splitlines()
-        
-    choice = input("\nWhat do you want to do? \n[add word, exam, exit, see stats, see words learned]\n")
+
+    choice = input("\nWhat do you want to do? \n[add word, exam, see stats, see words learned, reset, exit]\n")
     
     if choice == "exit":
         exit()
+
+    if choice == "reset":
+        done = 0
+        while done == 0:
+            yn = input("Are you sure you want to reset? That will delete your stats and learned words. [Yes/No]\n")
+            if yn == "Yes":
+                reset()
+                done += 1
+            if yn == "No":
+                done += 1
+            if yn != ("Yes" or "No"):
+                print("Can not compute answer ", yn, ", try again")
+
+
 
     if choice == "see stats":
         json_stats["word_count"] = len(words)
@@ -70,14 +96,20 @@ while True:
             json.dump(json_stats, f)
 
     if choice == "exam":
-        json_stats["questions_count"] += 1
+        # Check if there are enough words
         if len(words) < 4:
-            print("You need to add more words first!")
+            print("\nYou need to add more words first!")
         else:
+            # Select number of questions
             num_questions = input("Choose the number of questions: ")
+            # Start correct questions counter   
             exam_correct_count = 0
+            # Do "num_questions" questions
             for exam_question in range(int(num_questions)):
+                # Update questions counter for every question
+                json_stats["questions_count"] += 1
                 print("\nQuestion ", exam_question+1)
+                # Function to pick random options
                 def pick_random():
                     idx_question = random.randint(0, len(words)-1)
                     question_word = separate_words(words[idx_question])
@@ -90,12 +122,15 @@ while True:
                             random_words.append(separate_words(words[idx_rdn]))
                             i += 1
                     return [question_word, random_words]
-
+                
+                # Choose either to translate lang1 -> lang2 or lang2 -> lang1
                 methods = [1, 2] # lang1 -> lang2, lang2 -> lang1
-                method = methods[random.randint(0, 1)]
+                method = methods[random.randint(0, 1)] # Choose random method
                 if method == methods[0]:
+                    # Generate exam question and options
                     exam = pick_random()
                     print("\nWhat is the translation of: " + exam[0][0] + " ?")
+                    # Print options
                     options = []
                     for i in range(len(exam[1])):
                         options.append(exam[1][i][1])
@@ -106,7 +141,11 @@ while True:
                     for option in options:
                         print(q, "-", option)
                         q += 1
+                    # Check answer
                     answer = input("\n=> ")
+                    if answer in ["1", "2", "3", "4"]:
+                        print("Please write the complete word instead of the number: ")
+                        answer = input("\n=> ")
                     if answer == correct_answer:
                         print("Correct answer! :D")
                         json_stats["correct_count"] += 1
@@ -131,6 +170,10 @@ while True:
                         print(q, "-", option)
                         q += 1
                     answer = input("\n=> ")
+                    answer = input("\n=> ")
+                    if answer in ["1", "2", "3", "4"]:
+                        print("Please write the complete word instead of the number: ")
+                        answer = input("\n=> ")
                     if answer == correct_answer:
                         print("Correct answer! :D")
                         json_stats["correct_count"] += 1
@@ -140,9 +183,9 @@ while True:
                         json_stats["wrong_count"] += 1
                     with open('stats.json', 'w') as f:
                         json.dump(json_stats, f)
-                print(exam_correct_count)
+                #print(exam_correct_count)
             print("Exam done. Your score: ", exam_correct_count, "/", num_questions)
-            
+
     if choice == "see words learned":
         print("\nWords learned:")
         i = 0
