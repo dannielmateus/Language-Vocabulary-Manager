@@ -1,26 +1,33 @@
 # Vocabulary builder
 
+# Modules
 import random
 import json
 import json
 from collections import namedtuple
 from json import JSONEncoder
 
+# Open/create words file, where the vocabulary will be stored
 open("WORDS.txt", "a+")
 with open("WORDS.txt", "r", encoding="utf-8") as f:
     words = f.read().splitlines()
+    f.close()
 
+# Open the json with some stats, like score and number of words learned
 f = open("stats.json")
 json_stats = json.load(f)
+# Initialize the 2 languages
+if json_stats["language1"] == "" or json_stats["language2"] == "":
+    lang1 = input("To start, choose your primary language: ")
+    lang2 = input("Now choose your secondary language you wanna learn: ")
+    json_stats["language1"] = lang1
+    json_stats["language2"] = lang2
+    with open('stats.json', 'w') as f:
+        json.dump(json_stats, f)
+        f.close()
 
 lang1 = json_stats["language1"]
 lang2 = json_stats["language2"]
-
-def change_language():
-        new_lang1 = input("Choose the new primary language: ")
-        new_lang2 = input("Choose the new secundary language: ")
-        json_stats["language1"] = new_lang1
-        json_stats["language2"] = new_lang2
 
 def show_stats():
     print("\nLanguages: ", json_stats["language1"], "/", json_stats["language2"])
@@ -39,7 +46,7 @@ while True:
     with open("WORDS.txt", "rt", encoding="utf-8") as f:
         words = f.read().splitlines()
         
-    choice = input("\nWhat do you want to do? \n[add word, exam, exit, see stats, change languages, see words learned]\n")
+    choice = input("\nWhat do you want to do? \n[add word, exam, exit, see stats, see words learned]\n")
     
     if choice == "exit":
         exit()
@@ -135,9 +142,7 @@ while True:
                         json.dump(json_stats, f)
                 print(exam_correct_count)
             print("Exam done. Your score: ", exam_correct_count, "/", num_questions)
-
-    if choice == "change languages":
-        change_language()
+            
     if choice == "see words learned":
         print("\nWords learned:")
         i = 0
