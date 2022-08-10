@@ -181,7 +181,6 @@ while True:
                         json_stats["wrong_count"] += 1
                     with open('stats.json', 'w') as f:
                         json.dump(json_stats, f)
-                #print(exam_correct_count)
             print("Exam done. Your score: ", exam_correct_count, "/", num_questions)
 
     if choice == "see words learned":
