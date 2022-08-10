@@ -74,9 +74,7 @@ while True:
                 done += 1
             if yn != ("Yes" or "No"):
                 print("Can not compute answer ", yn, ", try again")
-
-
-
+                
     if choice == "see stats":
         json_stats["word_count"] = len(words)
         show_stats()
@@ -188,6 +186,8 @@ while True:
 
     if choice == "see words learned":
         print("\nWords learned:")
+        if words == []:
+            print("\nNo words were added yet.")
         i = 0
         for word_list in words:
             i += 1
